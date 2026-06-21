@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: ai-backend-smart-finance
+  profiles:
+    active: dev
+
+  # ============================================================
+  # BANCO DE DADOS — PostgreSQL no .200
+  # ============================================================
+  datasource:
+    url: jdbc:postgresql://192.168.15.200:5432/sgt_telecom?sslmode=disable&connectTimeout=5
+    username: sgt
+    password: ${DB_PASSWORD:sgt_dev_2026}   # mover p/ variável de ambiente em produção
+    hikari:
+      maximum-pool-size: 10
+      connection-timeout: 5000
+      pool-name: maisclinical-pool
+
+  ai:
+    # ============================================================
+    # SELEÇÃO DE PROVIDERS — fixa quem é chat e quem é embedding
+    # (mata a ambiguidade caso o starter OpenAI ainda esteja no classpath)
+    # ============================================================
+    model:
+      chat: ollama
+      embedding: ollama
+
+    # ============================================================
+    # OLLAMA — inferência soberana no .201 (chat + embedding)
+    # ============================================================
+    ollama:
+      base-url: http://192.168.15.201:11434
+      chat:
+        options:
+          model: nemotron            # confirme a tag exata com `ollama list`
+          temperature: 0.2           # baixo p/ domínio clínico (mais fidelidade)
+      embedding:
+        options:
+          model: nomic-embed-text    # 768 dims — o "segundo modelo" do RAG
+
+    # ============================================================
+    # VECTOR STORE — pgvector, reaproveita o mesmo PostgreSQL do .200
+    # ============================================================
+    vectorstore:
+      pgvector:
+        initialize-schema: false      # cria extensão + tabela vector_store na 1ª subida
+        index-type: HNSW
+        distance-type: COSINE_DISTANCE
+        dimensions: 768              # DEVE bater com a saída do nomic-embed-text
