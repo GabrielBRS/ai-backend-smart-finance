@@ -1,0 +1,13 @@
+syntax = "proto3";
+package sgt.score.v1;
+option java_multiple_files = true;
+option java_package = "org.sgt.score.v1";
+
+service TransacaoScoreService {
+  rpc CalcularScore (ScoreRequest) returns (ScoreResponse);
+}
+message ScoreRequest  { string transacao_id = 1; }
+message ScoreResponse {
+  int32  score         = 1;   // 0..1000 determinístico
+  string modelo_versao = 2;   // p/ auditoria/reprodutibilidade
+}
